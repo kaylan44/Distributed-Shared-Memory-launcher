@@ -33,9 +33,8 @@ int main(int argc, char *argv[])
 		pid_t pid;
 		int num_procs = 0;
 		int i;
-		char** newargv;
-		int tube_stdout[2];
-		int tube_stderr[2];
+		char **newargv;
+		int tube_redirect[2];
 
 		int nb_char=0;
  		char buf, sortie[10000];
@@ -53,7 +52,7 @@ int main(int argc, char *argv[])
 
 
 		//Test Guillaume
-		num_procs=1;
+		num_procs=3;
 
 
 
@@ -61,13 +60,8 @@ int main(int argc, char *argv[])
 		for(i = 0; i < num_procs ; i++) {
 
 			/* creation du tube pour rediriger stdout */
-			if (pipe(tube_stdout) == -1) {
+			if (pipe(tube_redirect) == -1) {
                perror("Le pipe stdoutn'a pas fonctionné");
-           	}
-
-			/* creation du tube pour rediriger stderr */
-			if (pipe(tube_stderr) == -1) {
-               perror("Le pipe stderr n'a pas fonctionné");
            	}
 
 
@@ -79,41 +73,41 @@ int main(int argc, char *argv[])
 			   
 			   /* redirection stdout */	      
 			   
-				close(tube_stdout[0]);          /* Fermeture du coté lecture non utilisé par le fils */
-                dup2(tube_stdout[1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
+				close(tube_redirect[0]);          /* Fermeture du coté lecture non utilisé par le fils */
+                //dup2(tube_redirect[1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
 
 			   /* redirection stderr */
 
-			   	close(tube_stderr[0]);          /* Fermeture du coté lecture non utilisé par le fils */
-                dup2(tube_stderr[1],STDERR_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/	      	      
+                dup2(tube_redirect[1],STDERR_FILENO);     /* On affecte stderr à l'extrémité 1 du tube (écriture)*/	      	      
 			   
 			   /* Creation du tableau d'arguments pour le ssh */ 
-			   newargv = &argv[3];
-
-
+			   newargv = argv+2;
 			   
 			   /* jump to new prog : */
 			   execvp("bin/truc",newargv);
-			   close(tube_stdout[1]);          /* Le pere lecteur verra un "EOF" ce qui permet la synchronisation */
-			   close(tube_stderr[1]);
-               wait(NULL); 
 
 			} else  if(pid > 0) { /* pere */		      
 			   
-			    close(tube_stdout[1]);          /* Fermeture du coté écriture non utilisé par le pere */
+			    close(tube_redirect[1]);          /* Fermeture du coté écriture non utilisé par le pere */
  				
         		/* cette boucle while permet de lire les caractères présent sur le coté lecture du tube et les stocker dans la chaine sortie */
-                while (read(tube_stdout[0], &buf, 1) > 0){
+                while (read(tube_redirect[0], &buf, 1) > 0){
            			sortie[nb_char]=buf; // rempli la chaine sortie caractère par caractère
            			nb_char++;
-             
            		}
+
+
        			sortie[nb_char]='\0'; // indique la fin de la chaine de caractère
 
 
-            	close(tube_stdout[0]); // fermeture du coté lecture du tube une fois la lecture une fois que la fonction read a renvoyé 0 : EOF, la lecture terminée
-            	close(tube_stderr[0]); 
-            	printf("sortie : %s\n", sortie);
+            	close(tube_redirect[0]); // fermeture du coté lecture du tube une fois la lecture une fois que la fonction read a renvoyé 0 : EOF, la lecture terminée
+            	printf("sortie :\n%s \n\n", sortie);
+
+            	//Nettoie les chaines de caractères utilisées pour afficher les sortie des processus fils
+            	nb_char=0;
+            	memset(&sortie,'\0',strlen(sortie));
+            	memset(&buf,'\0',strlen(sortie));
+
  				wait(NULL);
 			   	num_procs_creat++;	      
 			}

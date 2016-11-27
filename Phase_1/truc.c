@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
    
    fprintf(stdout,"Number of args : %i\n", argc);
    for(i= 0; i < argc ; i++)
-     fprintf(stderr,"arg[%i] : %s\n",i,argv[i]);
+   fprintf(stderr,"arg[%i] : %s\n",i,argv[i]);
     
    sprintf(exec_path,"%s/%s",str,"titi");	      
    fd = open(exec_path,O_RDONLY);
