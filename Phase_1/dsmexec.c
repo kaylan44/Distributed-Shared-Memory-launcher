@@ -9,6 +9,9 @@ dsm_proc_t *proc_array = NULL;
 /* le nombre de processus effectivement crees */
 volatile int num_procs_creat = 0;
 
+//Variable pour stocker le statut de sortie des fils
+sig_atomic_t child_exit_status;
+
 void usage(void)
 {
   fprintf(stdout,"Usage : dsmexec machine_file executable arg1 arg2 ...\n");
@@ -20,6 +23,12 @@ void sigchld_handler(int sig)
 {
    /* on traite les fils qui se terminent */
    /* pour eviter les zombies */
+  	int status;
+  	waitpid (-1, &status, WNOHANG);
+  	/* Stocke la statut de sortie du dernier dans une variable globale.  */
+  	child_exit_status = status;
+
+  	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
 }
 
 
@@ -38,9 +47,14 @@ int main(int argc, char *argv[])
 
 		int nb_char=0;
  		char buf, sortie[10000];
+ 		struct sigaction sigchld_action;
 
 		/* Mise en place d'un traitant pour recuperer les fils zombies*/      
-		/* XXX.sa_handler = sigchld_handler; */
+	    memset(&sigchld_action, 0, sizeof (sigchld_action));
+	    sigchld_action.sa_handler = &sigchld_handler;
+
+		/* Gère SIGCHLD en appelent sigchld_handler. */
+	    sigaction(SIGCHLD, &sigchld_action, NULL);
 
 		/* lecture du fichier de machines */
 		/* 1- on recupere le nombre de processus a lancer */
@@ -74,7 +88,7 @@ int main(int argc, char *argv[])
 			   /* redirection stdout */	      
 			   
 				close(tube_redirect[0]);          /* Fermeture du coté lecture non utilisé par le fils */
-                //dup2(tube_redirect[1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
+                dup2(tube_redirect[1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
 
 			   /* redirection stderr */
 
