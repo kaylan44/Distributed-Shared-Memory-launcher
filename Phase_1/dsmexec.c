@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
 		/* lecture du fichier de machines */
 		/* 1- on recupere le nombre de processus a lancer */
 		/* 2- on recupere les noms des machines : le nom de */
+		char* tab_name[]= {"toto", "tata", "titi"};
 		/* la machine est un des elements d'identification */
 
 		/* creation de la socket d'ecoute */
@@ -115,7 +116,9 @@ int main(int argc, char *argv[])
 
 
             	close(tube_redirect[0]); // fermeture du coté lecture du tube une fois la lecture une fois que la fonction read a renvoyé 0 : EOF, la lecture terminée
-            	printf("sortie :\n%s \n\n", sortie);
+
+            	/*Affichage de la sortie des processus fils*/
+            	printf("[Proc %d : %s : stdout]\n%s \n\n",i+1,tab_name[i], sortie);
 
             	//Nettoie les chaines de caractères utilisées pour afficher les sortie des processus fils
             	nb_char=0;
