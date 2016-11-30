@@ -30,7 +30,7 @@ void sigchld_handler(int sig)
   	/* Stocke la statut de sortie du dernier dans une variable globale.  */
 	child_exit_status = status;
 
-  	//printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
+  	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
   }
 
   char **set_data_from_file(char* path, char** machine,int *num){
@@ -140,40 +140,20 @@ void sigchld_handler(int sig)
 			    close(tube_stdout[1]);          /* Fermeture du coté écriture non utilisé par le pere */
 			    close(tube_stderr[1]);          /* Fermeture du coté écriture non utilisé par le pere */
 
-        		/* cette boucle while permet de lire les caractères présent sur le coté lecture du tube et les stocker dans la chaine sortie */
+        		/* cette boucle while permet de lire les caractères présent sur le coté lecture des tube et les afficher */
 	  			while (1){
 
-	  				if (read(tube_stdout[0], &buf, 1) > 0){
-	           			sortie_out[nb_char_out]=buf; // rempli la chaine sortie caractère par caractère
-	           			nb_char_out++;
-	           			if (buf=='\n'){
-	           				sortie_out[nb_char_out]='\0'; // indique la fin de la chaine de caractère
-
-	           				/*Affichage de la sortie des processus fils*/
-	           				printf("[Proc %d : %s : stdout]  %s",i+1,tab_name[i], sortie_out);
-	           				memset(&sortie_out,'\0',strlen(sortie_out));
-	           				buf='\0';
-	           				nb_char_out=0;
-	           			}
+	  				if (read(tube_stdout[0], &sortie_out, sizeof(sortie_out)) > 0){
+           				printf("[Proc %d : %s : stdout]  \n%s\n",i+1,tab_name[i], sortie_out);
+           				memset(&sortie_out,'\0',strlen(sortie_out));
 	           		}
 	           		else{
 	           			break;
 	           		}
 
-           			if (read(tube_stderr[0], &buf_err, 1) > 0){
-	           			sortie_err[nb_char_err]=buf_err; // rempli la chaine sortie caractère par caractère
-	           			nb_char_err++;
-	           			if (buf_err=='\n'){
-	           				sortie_out[nb_char_err]='\0'; // indique la fin de la chaine de caractère
-
-	           				/*Affichage de la sortie des processus fils*/
-	           				printf("[Proc %d : %s : stderr]  %s",i+1,tab_name[i], sortie_err);
-	           				memset(&sortie_err,'\0',strlen(sortie_err));
-	           				buf_err='\0';
-	           				nb_char_err=0;
-
-	           			}
-
+           			if (read(tube_stderr[0], &sortie_err, sizeof(sortie_err)) > 0){
+           				printf("[Proc %d : %s : stderr] \n%s\n",i+1,tab_name[i], sortie_err);
+           				memset(&sortie_err,'\0',strlen(sortie_err));
 	           		}
 	           		else{
 	           			break;
