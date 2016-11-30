@@ -1,4 +1,6 @@
 #include "common_impl.h"
+#define SIZE_MSG 50
+
 
 /* variables globales */
 
@@ -31,6 +33,33 @@ void sigchld_handler(int sig)
   	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
 }
 
+char **set_data_from_file(char* path, char** machine,int *num){
+
+    int i=0;
+    FILE* fp;
+    char buffer[SIZE_MSG];
+    memset(buffer,0,SIZE_MSG);
+
+    fp = fopen(path, "r");
+
+    while(fgets(buffer, SIZE_MSG,fp)) {
+        (*num)++;
+    }
+
+    //fseek(fp, 0, SEEK_SET);
+    rewind(fp);
+    machine = malloc(*num * sizeof(char*));
+
+    while(fgets(buffer, SIZE_MSG, fp)) {
+        *(machine + i) = malloc (SIZE_MSG * sizeof(char));
+        sprintf(*(machine + i), "%s", buffer);
+        i++;
+    }
+
+    fclose(fp);
+    return machine;
+
+}
 
 int main(int argc, char *argv[])
 {		
@@ -49,6 +78,8 @@ int main(int argc, char *argv[])
  		char buf, sortie[10000];
  		struct sigaction sigchld_action;
 
+ 		char** tab_name;
+
 		/* Mise en place d'un traitant pour recuperer les fils zombies*/      
 	    memset(&sigchld_action, 0, sizeof (sigchld_action));
 	    sigchld_action.sa_handler = &sigchld_handler;
@@ -58,8 +89,8 @@ int main(int argc, char *argv[])
 
 		/* lecture du fichier de machines */
 		/* 1- on recupere le nombre de processus a lancer */
-		/* 2- on recupere les noms des machines : le nom de */
-		char* tab_name[]= {"toto", "tata", "titi"};
+		/* 2- on recupere les noms des machines : */
+		tab_name = set_data_from_file("machine_file", tab_name,&num_procs);
 		/* la machine est un des elements d'identification */
 
 		/* creation de la socket d'ecoute */
@@ -67,7 +98,7 @@ int main(int argc, char *argv[])
 
 
 		//Test Guillaume
-		num_procs=3;
+		//num_procs=3;
 
 
 
