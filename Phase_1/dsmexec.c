@@ -1,5 +1,5 @@
 #include "common_impl.h"
-#define SIZE_MSG 50
+
 
 
 /* variables globales */
@@ -14,8 +14,8 @@ volatile int num_procs_creat = 0;
 //Variable pour stocker le statut de sortie des fils
 sig_atomic_t child_exit_status;
 
-void usage(void)
-{
+// Renvoie un message indiquant le format d'entrée du programme
+void usage(void){
 	fprintf(stdout,"Usage : dsmexec machine_file executable arg1 arg2 ...\n");
 	fflush(stdout);
 	exit(EXIT_FAILURE);
@@ -33,37 +33,9 @@ void sigchld_handler(int sig)
   	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
   }
 
-  char **set_data_from_file(char* path, char** machine,int *num){
-
-  	int i=0;
-  	FILE* fp;
-  	char buffer[SIZE_MSG];
-  	memset(buffer,0,SIZE_MSG);
-
-  	fp = fopen(path, "r");
-
-  	while(fgets(buffer, SIZE_MSG,fp)) {
-  		(*num)++;
-  	}
-
-    //fseek(fp, 0, SEEK_SET);
-  	rewind(fp);
-  	machine = malloc(*num * sizeof(char*));
-
-  	while(fgets(buffer, SIZE_MSG, fp)) {
-  		*(machine + i) = malloc (SIZE_MSG * sizeof(char));
-  		sprintf(*(machine + i), "%s", buffer);
-  		i++;
-  	}
-
-  	fclose(fp);
-  	return machine;
-
-  }
 
   int main(int argc, char *argv[])
   {		
-
   	if (argc < 3){
   		usage();
   	} 
@@ -75,9 +47,7 @@ void sigchld_handler(int sig)
   		int tube_stderr[2];
   		int tube_stdout[2];
 
-  		int nb_char_out=0;
-  		int nb_char_err=0;
-  		char buf,buf_err, sortie_out[500],sortie_err[500];
+  		char sortie_out[500],sortie_err[500];
 
 
   		struct sigaction sigchld_action;
@@ -171,12 +141,8 @@ void sigchld_handler(int sig)
             	printf("\n\n");
 
             	//Nettoie les chaines de caractères utilisées pour afficher les sortie des processus fils
-            	nb_char_out=0;
-            	nb_char_err=0;
-
             	memset(&sortie_out,'\0',strlen(sortie_err));
             	memset(&sortie_out,'\0',strlen(sortie_err));            	
-            	buf='\0'; 
             	wait(NULL);
             	num_procs_creat++;	      
             }

@@ -17,3 +17,32 @@ int creer_socket(int prop, int *port_num)
 /* et le processus intermediaire. N'oubliez pas */
 /* de declarer le prototype de ces nouvelles */
 /* fonctions dans common_impl.h */
+
+
+char **set_data_from_file(char* path, char** machine,int *num){
+
+	int i=0;
+	FILE* fp;
+	char buffer[SIZE_MSG];
+	memset(buffer,0,SIZE_MSG);
+
+	fp = fopen(path, "r");
+
+	while(fgets(buffer, SIZE_MSG,fp)) {
+		(*num)++;
+	}
+
+//fseek(fp, 0, SEEK_SET);
+	rewind(fp);
+	machine = malloc(*num * sizeof(char*));
+
+	while(fgets(buffer, SIZE_MSG, fp)) {
+		*(machine + i) = malloc (SIZE_MSG * sizeof(char));
+		sprintf(*(machine + i), "%s", buffer);
+		i++;
+	}
+
+	fclose(fp);
+	return machine;
+
+}
