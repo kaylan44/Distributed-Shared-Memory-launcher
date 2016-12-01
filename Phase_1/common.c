@@ -85,7 +85,7 @@ int initListeningSocket(int* sock, int num_procs){
 
     if (getsockname(sock, (struct sockaddr *)& serv_add, &len) == -1)
         ERROR_EXIT("getsockname");
-    port = ntohs(serv_add.sin_port));
+    port = ntohs(serv_add.sin_port);
 
 
     printf("Père en écoute \n");
