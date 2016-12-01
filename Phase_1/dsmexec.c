@@ -66,9 +66,6 @@ void sigchld_handler(int sig)
 		/* 2- on recupere les noms des machines : */
   		tab_name = set_data_from_file("machine_file", tab_name,&num_procs);
 		/* la machine est un des elements d'identification */
-		int k;
-		for(k = 0; k<3; k++)
-			printf("%s", tab_name[k]);
 		/* creation de la socket d'ecoute */
 		/* + ecoute effective */
 

@@ -18,11 +18,11 @@ struct dsm_proc_conn  {
    int rank;
    /* a completer */
 };
-typedef struct dsm_proc_conn dsm_proc_conn_t; 
+typedef struct dsm_proc_conn dsm_proc_conn_t;
 
 /* definition du type des infos */
 /* d'identification des processus dsm */
-struct dsm_proc {   
+struct dsm_proc {
   pid_t pid;
   dsm_proc_conn_t connect_info;
 };
@@ -33,3 +33,5 @@ int creer_socket(int type, int *port_num);
 
 // Récupère les différentes infos du fichier se trouvant a chemin "path"
 char **set_data_from_file(char* path, char** machine,int *num);
+
+int initListeningSocket(int* sock, int num_procs);
