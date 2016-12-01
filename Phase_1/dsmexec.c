@@ -6,7 +6,7 @@
 
 /* un tableau gerant les infos d'identification */
 /* des processus dsm */
-dsm_proc_t *proc_array = NULL; 
+dsm_proc_t *proc_array = NULL;
 
 /* le nombre de processus effectivement crees */
 volatile int num_procs_creat = 0;
@@ -35,11 +35,11 @@ void sigchld_handler(int sig)
 
 
   int main(int argc, char *argv[])
-  {		
+  {
   	if (argc < 3){
   		usage();
-  	} 
-  	else {       
+  	}
+  	else {
   		pid_t pid;
   		int num_procs = 0;
   		int i;
@@ -52,9 +52,9 @@ void sigchld_handler(int sig)
 
   		struct sigaction sigchld_action;
 
-  		char** tab_name;
+  		char** tab_name = NULL;
 
-		/* Mise en place d'un traitant pour recuperer les fils zombies*/      
+		/* Mise en place d'un traitant pour recuperer les fils zombies*/
   		memset(&sigchld_action, 0, sizeof (sigchld_action));
   		sigchld_action.sa_handler = &sigchld_handler;
 
@@ -66,9 +66,11 @@ void sigchld_handler(int sig)
 		/* 2- on recupere les noms des machines : */
   		tab_name = set_data_from_file("machine_file", tab_name,&num_procs);
 		/* la machine est un des elements d'identification */
-
+		int k;
+		for(k = 0; k<3; k++)
+			printf("%s", tab_name[k]);
 		/* creation de la socket d'ecoute */
-		/* + ecoute effective */ 
+		/* + ecoute effective */
 
 
 		/* creation des fils */
@@ -88,24 +90,24 @@ void sigchld_handler(int sig)
   			pid = fork();
   			if(pid == -1) ERROR_EXIT("fork");
 
-			if (pid == 0) { /* fils */	
+			if (pid == 0) { /* fils */
 
-			   /* redirection stdout */	      
+			   /* redirection stdout */
 
 				close(tube_stdout[0]);          /* Fermeture du coté lecture non utilisé par le fils */
                 dup2(tube_stdout[1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
 
 			   /* redirection stderr */
 				close(tube_stderr[0]);          /* Fermeture du coté lecture non utilisé par le fils */
-                dup2(tube_stderr[1],STDERR_FILENO);     /* On affecte stderr à l'extrémité 1 du tube (écriture)*/	      	      
+                dup2(tube_stderr[1],STDERR_FILENO);     /* On affecte stderr à l'extrémité 1 du tube (écriture)*/
 
-			   /* Creation du tableau d'arguments pour le ssh */ 
+			   /* Creation du tableau d'arguments pour le ssh */
   			newargv = argv+2;
 
 			   /* jump to new prog : */
   			execvp("bin/truc",newargv);
 
-			} else  if(pid > 0) { /* pere */		      
+			} else  if(pid > 0) { /* pere */
 
 			    close(tube_stdout[1]);          /* Fermeture du coté écriture non utilisé par le pere */
 			    close(tube_stderr[1]);          /* Fermeture du coté écriture non utilisé par le pere */
@@ -131,10 +133,6 @@ void sigchld_handler(int sig)
 		        }
 
 
-
-
-
-
             	close(tube_stdout[0]); // fermeture du coté lecture du tube une fois la lecture une fois que la fonction read a renvoyé 0 : EOF, la lecture terminée
 
             	/*Affichage de la sortie des processus fils*/
@@ -142,9 +140,9 @@ void sigchld_handler(int sig)
 
             	//Nettoie les chaines de caractères utilisées pour afficher les sortie des processus fils
             	memset(&sortie_out,'\0',strlen(sortie_err));
-            	memset(&sortie_out,'\0',strlen(sortie_err));            	
+            	memset(&sortie_out,'\0',strlen(sortie_err));
             	wait(NULL);
-            	num_procs_creat++;	      
+            	num_procs_creat++;
             }
         }
 
@@ -170,7 +168,7 @@ void sigchld_handler(int sig)
 		/* envoi des infos de connexion aux processus */
 
 		/* gestion des E/S : on recupere les caracteres */
-		/* sur les tubes de redirection de stdout/stderr */     
+		/* sur les tubes de redirection de stdout/stderr */
 		/* while(1)
 		{
 		je recupere les infos sur les tubes de redirection
@@ -185,7 +183,6 @@ void sigchld_handler(int sig)
 		/* on ferme les descripteurs proprement */
 
 		/* on ferme la socket d'ecoute */
-    }   
-    exit(EXIT_SUCCESS);  
+    }
+    exit(EXIT_SUCCESS);
 }
-

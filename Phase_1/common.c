@@ -1,14 +1,14 @@
 #include "common_impl.h"
 
-int creer_socket(int prop, int *port_num) 
+int creer_socket(int prop, int *port_num)
 {
    int fd = 0;
-   
+
    /* fonction de creation et d'attachement */
    /* d'une nouvelle socket */
    /* renvoie le numero de descripteur */
    /* et modifie le parametre port_num */
-   
+
    return fd;
 }
 
@@ -22,6 +22,7 @@ int creer_socket(int prop, int *port_num)
 char **set_data_from_file(char* path, char** machine,int *num){
 
 	int i=0;
+    int n = 0;
 	FILE* fp;
 	char buffer[SIZE_MSG];
 	memset(buffer,0,SIZE_MSG);
@@ -38,8 +39,12 @@ char **set_data_from_file(char* path, char** machine,int *num){
 
 	while(fgets(buffer, SIZE_MSG, fp)) {
 		*(machine + i) = malloc (SIZE_MSG * sizeof(char));
-		sprintf(*(machine + i), "%s", buffer);
-		i++;
+        sprintf(*(machine + i), "%s", buffer);
+        n = strlen(machine[i]);
+        if (machine[i][n-1]=='\n'){
+            machine[i][n-1] = '\0';
+        }
+        i++;
 	}
 
 	fclose(fp);
