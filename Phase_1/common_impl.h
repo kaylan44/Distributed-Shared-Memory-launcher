@@ -7,7 +7,13 @@
 #include <errno.h>
 #include <string.h>
 #include <fcntl.h>
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+
 #define SIZE_MSG 50
+#define ARGV_SIZE 400
 /* autres includes (eventuellement) */
 
 #define ERROR_EXIT(str) {perror(str);exit(EXIT_FAILURE);}
@@ -31,7 +37,14 @@ typedef struct dsm_proc dsm_proc_t;
 int creer_socket(int type, int *port_num);
 
 
-// Récupère les différentes infos du fichier se trouvant a chemin "path"
+// Retourne le nouveau vecteur d'argument pour SSH
+char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** argv);
+
+// 	Récupère les différentes infos du fichier se trouvant a chemin "path"
 char **set_data_from_file(char* path, char** machine,int *num);
 
-int initListeningSocket(int* sock, int num_procs);
+
+//Connect the sockeet with the informations in arg
+void do_connect(int sock, char* hostname, int port, struct sockaddr_in* sock_host );
+
+int initListeningSocket(int* sock, int num_procs, char* hostname);

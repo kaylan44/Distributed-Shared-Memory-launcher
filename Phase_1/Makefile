@@ -26,6 +26,7 @@ dsmwrap: dsmwrap.o common.o
 truc: truc.o 
 	$(CLINKER) $(OPTFLAGS) -o truc truc.o common.o $(LIBS)	
 	mv truc ./bin
+	rm ./*.o 
 	
 clean:
 	@-/bin/rm -f *.o *~ PI* $(EXECS) *.out core 
