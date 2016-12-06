@@ -38,7 +38,7 @@ char **set_data_from_file(char* path, char** machine,int *num){
 		(*num)++;
 	}
 
-//fseek(fp, 0, SEEK_SET);
+    //fseek(fp, 0, SEEK_SET);
 	rewind(fp);
 	machine = malloc(*num * sizeof(char*));
 
