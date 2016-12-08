@@ -123,7 +123,7 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 
     sprintf(newargv[0],"%s","ssh");
     sprintf(newargv[1],"%s",name);
-    sprintf(newargv[2],"%s","Documents/2A/PR204/githubb/PR204/Phase_1/bin/dsmwrap");
+    sprintf(newargv[2],"%s","Documents/2A/PR204/PR204/Phase_1/bin/dsmwrap");
     sprintf(newargv[3],"%d",port_serv);
     sprintf(newargv[4],"%s",addr_ip);
     //sprintf(newargv[5],"%s","bin/truc");
