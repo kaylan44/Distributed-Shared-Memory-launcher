@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
 		pid_t pid;
 		int num_procs = 0;
 		int i;
-		char **newargv1=NULL;
-		char **newargv2=NULL;
+
+		char **newargv=NULL;
 
 		int tube_stderr[2];
 		int tube_stdout[2];
@@ -119,23 +119,23 @@ int main(int argc, char *argv[])
 
 				/* Creation du tableau d'arguments pour le ssh */
 
-				newargv1 = argv+2;
-
-				newargv2 = init_SshArg(tab_name[i],port_serv,hostname,argc,argv);
 
 
+				newargv = init_SshArg(tab_name[i],port_serv,hostname,argc,argv);
+
+				/*
 				int j =0;
 				for (j= 0; j< 4+argc-2+1; j++){
-					fprintf(stdout,"test %s\n", newargv2[j]);
-				}
-				fprintf(stdout,"bien affiche \n");
+					fprintf(stdout,"test %s\n", newargv[j]);
+				}*/
+				//fprintf(stdout,"bien affiche \n");
 				//fprintf(stdout,"len %d\n", 5 + argc-2+1);
-				//fprintf(stdout,"test %s\n", newargv2[7]);
+				//fprintf(stdout,"test %s\n", newargv[7]);
 				// laisser le temps de tout afficher
 				//sleep(2);
 
 				/* jump to new prog : */
-				execvp("ssh",newargv2);
+				execvp("ssh",newargv);
 
 			} else  if(pid > 0) { /* pere */
 
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 			/* on accepte les connexions des processus dsm */
 
 			/* ACCEPT SOCKET */
-
+			sleep(2);
 			//accept connection from client
 			sock_acc = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
 			if (sock_acc < 0)

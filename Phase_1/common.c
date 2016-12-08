@@ -146,8 +146,6 @@ void do_connect(int sock, char* hostname, int port, struct sockaddr_in* sock_hos
     struct hostent* h;
     h = gethostbyname(hostname);
 
-
-
     //serv_add.sin_addr.s_addr = INADDR_ANY;
     //synonyme char *h_addr of h_addr_list[0
     memcpy(&sock_host->sin_addr, h->h_addr_list[0], h->h_length);

@@ -6,6 +6,7 @@ int main(int argc, char **argv)
    struct sockaddr_in sock_host;
    char hostname[SIZE_MSG];
    char machine[SIZE_MSG];
+   char len_machine[SIZE_MSG];
 
    int port = atoi(argv[1]);
    int sock;
@@ -14,11 +15,8 @@ int main(int argc, char **argv)
    sprintf(hostname,"%s",argv[2]);
    sprintf(pid,"%d",getpid());
 
-   fprintf(stdout,"port:%d\n", port);
-   fprintf(stdout,"hostname:%s\n", hostname);
-   fprintf(stdout,"pid:%s\n", pid);
 
-   //fflush(stdout);
+
    int len_newargv=argc-3;
 
    char ** newargv=malloc (len_newargv * sizeof(char*));
@@ -33,7 +31,7 @@ int main(int argc, char **argv)
       fprintf(stdout,"dsmwrap %s\n", newargv[j]);
     }
     */
-   fprintf(stdout,"Coucou papa\n");
+
    /* creation d'une socket pour se connecter au */
    /* au lanceur et envoyer/recevoir les infos */
 
@@ -49,7 +47,19 @@ int main(int argc, char **argv)
     fprintf(stdout,"passe connect\n");
 
     gethostname(machine, SIZE_MSG);
+    fprintf(stdout,"\n");
+    fprintf(stdout,"port:%d de %s\n", port, machine);
+    fprintf(stdout,"hostname:%s de %s\n", hostname, machine);
+    fprintf(stdout,"pid:%s de %s\n", pid, machine);
+    fprintf(stdout,"\n");
+
+
+
    /* Envoi du nom de machine au lanceur */
+   sprintf(len_machine, "%d", strlen(machine));
+   if (write(sock, len_machine, SIZE_MSG) < 0){
+      ERROR_EXIT("erreur write");
+   }
 
    if (write(sock, machine, SIZE_MSG) < 0){
       ERROR_EXIT("erreur write");
@@ -66,7 +76,10 @@ int main(int argc, char **argv)
    /* pour qu'il le propage à tous les autres */
    /* processus dsm */
 
+   fflush(stdout);
+   fflush(stderr);
+
    /* on execute la bonne commande */
-   execvp("Documents/2A/PR204/githubb/PR204/Phase_1/bin/truc",newargv);
+   execvp("Documents/2A/PR204/PR204/Phase_1/bin/truc",newargv);
    return 0;
 }
