@@ -80,6 +80,6 @@ int main(int argc, char **argv)
    fflush(stderr);
 
    /* on execute la bonne commande */
-   execvp("Documents/2A/PR204/PR204/Phase_1/bin/truc",newargv);
+   execvp("Semestre_7/PR204/Phase_1/bin/truc",newargv);
    return 0;
 }
