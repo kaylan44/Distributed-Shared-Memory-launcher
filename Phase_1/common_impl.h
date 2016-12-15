@@ -22,6 +22,8 @@
 /* de connexion des processus dsm */
 struct dsm_proc_conn  {
    int rank;
+   char* machine;
+   int listenning_port;
    /* a completer */
 };
 typedef struct dsm_proc_conn dsm_proc_conn_t;
