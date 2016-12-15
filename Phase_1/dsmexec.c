@@ -152,24 +152,18 @@ int main(int argc, char *argv[])
 		}
 
 
-		for(i = 0; i < num_procs ; i++){
+		for(i = 0; i < num_procs_creat ; i++){
 
 			/* on accepte les connexions des processus dsm */
 
 			/* ACCEPT SOCKET */
 
-			/* ACCEPT SOCKET */
-			//sleep(2);
-
 			//accept connection from client
 			do{
 				sock_acc = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
-				//	if (sock_acc < 0)
-				//ERROR_EXIT("Erreur acceptation");
-				printf("Coucou lolo\n");
 			}
-			while(errno == EINTR);
-				//sock_acc = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
+			while(sock_acc <0 );
+			
 
 
 			/*  On recupere le nom de la machine distante */
@@ -236,7 +230,6 @@ int main(int argc, char *argv[])
 
 		while (1){
 			readfs=masterfs;
-			fprintf(stdout, "test\n");
 			if (select(FD_SETSIZE, & readfs, NULL, NULL, NULL) <= 0) {
 				ERROR_EXIT("select");
 				break;

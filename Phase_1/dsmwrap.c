@@ -36,6 +36,8 @@ int main(int argc, char **argv)
     sprintf(pid,"%d",getpid());
 
     //connect to remote socket
+
+
     do_connect(sock,hostname, port, &sock_host);
 
 
@@ -77,8 +79,20 @@ int main(int argc, char **argv)
     fflush(stdout);
     fflush(stderr);
 
+
     /* on execute la bonne commande */
     execvp("Documents/2A/PR204/PR204/Phase_1/bin/truc",newargv);
+
+    FILE* fichier = NULL;
+    fichier = fopen("Documents/2A/PR204/PR204/Phase_1/titi", "a");
+    if (fichier == NULL)
+    {
+        ERROR_EXIT("erreur write");
+    }
+    fputs("\n\n", fichier);
+    fputs(machine, fichier);
+    fflush(fichier);
+    fclose(fichier);
     return 0;
 /*
 
