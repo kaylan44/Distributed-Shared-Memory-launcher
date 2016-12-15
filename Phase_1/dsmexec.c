@@ -2,6 +2,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 
 
 /* variables globales */
@@ -48,8 +53,11 @@ int main(int argc, char *argv[])
 
 		char **newargv=NULL;
 
-		int tube_stderr[2];
-		int tube_stdout[2];
+		int (*tube_stderr)[2];
+		int (*tube_stdout)[2];
+		fd_set readfs;
+		fd_set masterfs;
+
 
 		int sock_serv;
 		int port_serv;
@@ -61,6 +69,9 @@ int main(int argc, char *argv[])
 		char hostname[SIZE_MSG] = {0};
 
 		char sortie_out[500],sortie_err[500];
+		//Memset \0 pour éviter les probleme d'affichage
+		memset(&sortie_out,'\0',500);
+		memset(&sortie_err,'\0',500);
 
 
 		struct sigaction sigchld_action;
@@ -84,6 +95,8 @@ int main(int argc, char *argv[])
 		printf("fd sock_serv %d\n", sock_serv);
 		/* + ecoute effective */
 
+		tube_stderr=malloc(num_procs*sizeof(int));
+		tube_stdout=malloc(num_procs*sizeof(int));
 
 		proc_array = malloc(sizeof(proc_array) * num_procs);
 		if (proc_array == NULL){
@@ -94,12 +107,12 @@ int main(int argc, char *argv[])
 		for(i = 0; i < num_procs ; i++) {
 
 			/* creation du tube pour rediriger stdout */
-			if (pipe(tube_stdout) == -1) {
+			if (pipe(tube_stdout[i]) == -1) {
 				perror("Le pipe stdout n'a pas fonctionné");
 			}
 
 			/* creation du tube pour rediriger stdout */
-			if (pipe(tube_stderr) == -1) {
+			if (pipe(tube_stderr[i]) == -1) {
 				perror("Le pipe stderr n'a pas fonctionné");
 			}
 
@@ -113,12 +126,12 @@ int main(int argc, char *argv[])
 				/* redirection stdout */
 
 
-				close(tube_stdout[0]);          /* Fermeture du coté lecture non utilisé par le fils */
-				dup2(tube_stdout[1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
+				close(tube_stdout[i][0]);          /* Fermeture du coté lecture non utilisé par le fils */
+				dup2(tube_stdout[i][1],STDOUT_FILENO);     /* On affecte stdout à l'extrémité 1 du tube (écriture)*/
 
 				/* redirection stderr */
-				close(tube_stderr[0]);          /* Fermeture du coté lecture non utilisé par le fils */
-				dup2(tube_stderr[1],STDERR_FILENO);     /* On affecte stderr à l'extrémité 1 du tube (écriture)*/
+				close(tube_stderr[i][0]);          /* Fermeture du coté lecture non utilisé par le fils */
+				dup2(tube_stderr[i][1],STDERR_FILENO);     /* On affecte stderr à l'extrémité 1 du tube (écriture)*/
 
 				/* Creation du tableau d'arguments pour le ssh */
 
@@ -126,26 +139,13 @@ int main(int argc, char *argv[])
 
 				newargv = init_SshArg(tab_name[i],port_serv,hostname,argc,argv);
 
-				/*
-				int j =0;
-				for (j= 0; j< 4+argc-2+1; j++){
-					fprintf(stdout,"test %s\n", newargv[j]);
-				}*/
-				//fprintf(stdout,"bien affiche \n");
-				//fprintf(stdout,"len %d\n", 5 + argc-2+1);
-				//fprintf(stdout,"test %s\n", newargv[7]);
-				// laisser le temps de tout afficher
-				//sleep(2);
-
 				/* jump to new prog : */
 				execvp("ssh",newargv);
+			}
+			else  if(pid > 0) { /* pere */
 
-			} else  if(pid > 0) { /* pere */
-
-				close(tube_stdout[1]);          /* Fermeture du coté écriture non utilisé par le pere */
-				close(tube_stderr[1]);          /* Fermeture du coté écriture non utilisé par le pere */
-
-
+				close(tube_stdout[i][1]);          /* Fermeture du coté écriture non utilisé par le pere */
+				close(tube_stderr[i][1]);          /* Fermeture du coté écriture non utilisé par le pere */
 
 				num_procs_creat++;
 			}
@@ -157,15 +157,19 @@ int main(int argc, char *argv[])
 			/* on accepte les connexions des processus dsm */
 
 			/* ACCEPT SOCKET */
+
+			/* ACCEPT SOCKET */
 			//sleep(2);
+
 			//accept connection from client
 			do{
 				sock_acc = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
-			//	if (sock_acc < 0)
+				//	if (sock_acc < 0)
 				//ERROR_EXIT("Erreur acceptation");
+				printf("Coucou lolo\n");
 			}
 			while(errno == EINTR);
-
+				//sock_acc = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
 
 
 			/*  On recupere le nom de la machine distante */
@@ -180,6 +184,7 @@ int main(int argc, char *argv[])
 			if (read(sock_acc, buffer, SIZE_MSG) < 0){
 				ERROR_EXIT("Erreur read");
 			}
+
 			sprintf(proc_array[i].connect_info.machine, "%s", buffer);
 			printf("machine = %s\n", proc_array[i].connect_info.machine);
 
@@ -207,7 +212,6 @@ int main(int argc, char *argv[])
 			proc_array[i].connect_info.rank = i;
 			printf("rank = %d\n", proc_array[i].connect_info.rank);
 
-
 		}
 
 		/* envoi du nombre de processus aux processus dsm*/
@@ -216,34 +220,52 @@ int main(int argc, char *argv[])
 
 		/* envoi des infos de connexion aux processus */
 
+
+
 		/* gestion des E/S : on recupere les caracteres */
 		/* sur les tubes de redirection de stdout/stderr */
-		/* while(1)
-		{
-		je recupere les infos sur les tubes de redirection
-		jusqu'à ce qu'ils soient inactifs (ie fermes par les
-		processus dsm ecrivains de l'autre cote ...)*/
 
-		/* cette boucle while permet de lire les caractères présent sur le coté lecture des tube et les afficher */
+		//clean the set before adding file descriptors
+		FD_ZERO(&readfs);
+		FD_ZERO(&masterfs);
+		// Ajout des tubes au conteneur de socket
+		for (i = 0; i < num_procs_creat; i ++){
+			FD_SET(tube_stdout[i][0], &masterfs);
+			FD_SET(tube_stderr[i][0], &masterfs);
+		}
+
 		while (1){
-			i = 0;
-			if(i<num_procs){
-				if (read(tube_stdout[0], sortie_out, sizeof(sortie_out)) > 0){
-					printf("[Proc %d : %s : stdout]  \n%s\n",i+1,tab_name[i], sortie_out);
-					memset(&sortie_out,'\0',strlen(sortie_out));
+			readfs=masterfs;
+			fprintf(stdout, "test\n");
+			if (select(FD_SETSIZE, & readfs, NULL, NULL, NULL) <= 0) {
+				ERROR_EXIT("select");
+				break;
+			}
+
+			for (i = 0; i < num_procs_creat; i ++){
+				if (FD_ISSET(tube_stdout[i][0], & readfs)) {
+
+					if (read(tube_stdout[i][0], sortie_out, sizeof(sortie_out)) > 0){
+						printf("[Proc %d : %s : stdout]  \n%s\n",i+1,tab_name[i], sortie_out);
+						memset(&sortie_out,'\0',strlen(sortie_out));
+					}
 				}
 
-				if (read(tube_stderr[0], sortie_err, sizeof(sortie_err)) > 0){
-					printf("[Proc %d : %s : stderr] \n%s\n",i+1,tab_name[i], sortie_err);
-					memset(&sortie_err,'\0',strlen(sortie_err));
+				if (FD_ISSET(tube_stderr[i][0], & readfs)) {
+
+					if (read(tube_stderr[i][0], sortie_err, sizeof(sortie_err)) > 0){
+						printf("[Proc %d : %s : stderr] \n%s\n",i+1,tab_name[i], sortie_err);
+						memset(&sortie_err,'\0',strlen(sortie_err));
+					}
 				}
 			}
-			i++;
 		}
 
 
-		close(tube_stdout[0]); // fermeture du coté lecture du tube une fois la lecture une fois que la fonction read a renvoyé 0 : EOF, la lecture terminée
 
+
+		close(tube_stdout[i][0]); // fermeture du coté lecture du tube une fois la lecture une fois que la fonction read a renvoyé 0 : EOF, la lecture terminée
+		close(tube_stderr[i][0]);
 		/*Affichage de la sortie des processus fils*/
 		printf("\n\n");
 		//Nettoie les chaines de caractères utilisées pour afficher les sortie des processus fils
@@ -251,9 +273,6 @@ int main(int argc, char *argv[])
 		memset(sortie_out,'\0',strlen(sortie_err));
 		/* on attend les processus fils */
 		wait(NULL);
-
-		//};
-
 
 
 		/* on ferme les descripteurs proprement */
