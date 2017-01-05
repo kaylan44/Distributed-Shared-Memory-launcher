@@ -12,7 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
-#define SIZE_MSG 50
+#define SIZE_MSG 70
 #define ARGV_SIZE 400
 /* autres includes (eventuellement) */
 
@@ -22,8 +22,8 @@
 /* de connexion des processus dsm */
 struct dsm_proc_conn  {
    int rank;
-   char* machine;
    int listenning_port;
+   char machine[SIZE_MSG];
    /* a completer */
 };
 typedef struct dsm_proc_conn dsm_proc_conn_t;

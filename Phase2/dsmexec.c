@@ -1,4 +1,5 @@
 #include "common_impl.h"
+#include "dsm.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -34,7 +35,7 @@ void sigchld_handler(int sig)
 	/* pour eviter les zombies */
 	int status;
 	waitpid (-1, &status, WNOHANG);
-	/* Stocke la statut de sortie du dernier dans une variable globale.  */
+	/* Stock le statut de sortie du dernier dans une variable globale.  */
 	child_exit_status = status;
 
 	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
@@ -61,11 +62,12 @@ int main(int argc, char *argv[])
 
 		int sock_serv;
 		int port_serv;
-		int sock_acc;
+		int *sock_acc;
 		struct sockaddr_in addr_acc;
 		socklen_t addr_acc_len = sizeof(addr_acc);
 
 		char buffer[SIZE_MSG];
+		char *buffer2 = NULL;
 		char hostname[SIZE_MSG] = {0};
 
 		char sortie_out[500],sortie_err[500];
@@ -89,6 +91,9 @@ int main(int argc, char *argv[])
 		/* 1- on recupere le nombre de processus a lancer */
 		/* 2- on recupere les noms des machines : */
 		tab_name = set_data_from_file("machine_file", tab_name,&num_procs);
+
+		/* On connait le nb de processus, on alloue la mémoire au tableau de sockacc*/
+		sock_acc=malloc(num_procs*sizeof(int));
 		/* la machine est un des elements d'identification */
 		/* creation de la socket d'ecoute */
 		port_serv = initListeningSocket(&sock_serv, num_procs, hostname);
@@ -148,6 +153,7 @@ int main(int argc, char *argv[])
 				close(tube_stderr[i][1]);          /* Fermeture du coté écriture non utilisé par le pere */
 
 				num_procs_creat++;
+				buffer2 = malloc(sizeof(dsm_proc_t) * num_procs_creat);
 			}
 		}
 
@@ -160,22 +166,22 @@ int main(int argc, char *argv[])
 
 			//accept connection from client
 			do{
-				sock_acc = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
+				sock_acc[i] = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
 			}
-			while(sock_acc <0 );
-			
+			while(sock_acc[i] <0 );
+
 
 
 			/*  On recupere le nom de la machine distante */
 			/* 1- d'abord la taille de la chaine */
-			if (read(sock_acc, buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-			proc_array[i].connect_info.machine = malloc(atoi(buffer)*sizeof(char));
+			//proc_array[i].connect_info.machine = malloc(atoi(buffer)*sizeof(char));
 
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc, buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
 				ERROR_EXIT("Erreur read");
 			}
 
@@ -184,7 +190,7 @@ int main(int argc, char *argv[])
 
 			/* On recupere le pid du processus distant  */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc, buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
 				ERROR_EXIT("Erreur read");
 			}
 
@@ -196,7 +202,7 @@ int main(int argc, char *argv[])
 			/* On recupere le numero de port de la socket */
 			/* d'ecoute des processus distants */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc, buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
 				ERROR_EXIT("Erreur read");
 			}
 			proc_array[i].connect_info.listenning_port = atoi(buffer);
@@ -208,14 +214,32 @@ int main(int argc, char *argv[])
 
 		}
 
-		/* envoi du nombre de processus aux processus dsm*/
+		for(i = 0; i < num_procs_creat ; i++){
 
-		/* envoi des rangs aux processus dsm */
+			/* envoi du nombre de processus aux processus dsm*/
+			if (write(sock_acc[i], &num_procs_creat, sizeof(int)) < 0){
+				ERROR_EXIT("erreur write");
+			}
+			/* envoi du rang du processus*/
 
-		/* envoi des infos de connexion aux processus */
+			if (write(sock_acc[i], &i, sizeof(int)) < 0){
+				ERROR_EXIT("erreur write");
+			}
+
+
+			/* envoi du tableau des processus aux processus dsm*/
+			/* envoi des rangs aux processus dsm */
+			/* envoi des infos de connexion aux processus */
+
+			memcpy(buffer2, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
+
+			if (write(sock_acc[i], buffer2, num_procs_creat*sizeof( dsm_proc_t)) < 0){
+				ERROR_EXIT("erreur write");
+			}
 
 
 
+		}
 		/* gestion des E/S : on recupere les caracteres */
 		/* sur les tubes de redirection de stdout/stderr */
 

@@ -1,13 +1,14 @@
 #include "dsm.h"
+#include "common_impl.h"
 
 int DSM_NODE_NUM; /* nombre de processus dsm */
-int DSM_NODE_ID;  /* rang (= numero) du processus */ 
+int DSM_NODE_ID;  /* rang (= numero) du processus */
 
 /* indique l'adresse de debut de la page de numero numpage */
 static char *num2address( int numpage )
-{ 
+{
    char *pointer = (char *)(BASE_ADDR+(numpage*(PAGE_SIZE)));
-   
+
    if( pointer >= (char *)TOP_ADDR ){
       fprintf(stderr,"[%i] Invalid address !\n", DSM_NODE_ID);
       return NULL;
@@ -18,7 +19,7 @@ static char *num2address( int numpage )
 /* fonctions pouvant etre utiles */
 static void dsm_change_info( int numpage, dsm_page_state_t state, dsm_page_owner_t owner)
 {
-   if ((numpage >= 0) && (numpage < PAGE_NUMBER)) {	
+   if ((numpage >= 0) && (numpage < PAGE_NUMBER)) {
 	if (state != NO_CHANGE )
 	table_page[numpage].status = state;
       if (owner >= 0 )
@@ -65,7 +66,7 @@ static void dsm_free_page( int numpage )
 }
 
 static void *dsm_comm_daemon( void *arg)
-{  
+{
    while(1)
      {
 	/* a modifier */
@@ -86,7 +87,7 @@ static int dsm_recv(int from,void *buf,size_t size)
 }
 
 static void dsm_handler( void )
-{  
+{
    /* A modifier */
    printf("[%i] FAULTY  ACCESS !!! \n",DSM_NODE_ID);
    abort();
@@ -97,7 +98,7 @@ static void segv_handler(int sig, siginfo_t *info, void *context)
 {
    /* A completer */
    /* adresse qui a provoque une erreur */
-   void  *addr = info->si_addr;   
+   void  *addr = info->si_addr;
   /* Si ceci ne fonctionne pas, utiliser a la place :*/
   /*
    #ifdef __x86_64__
@@ -110,8 +111,8 @@ static void segv_handler(int sig, siginfo_t *info, void *context)
    */
    /*
    pour plus tard (question ++):
-   dsm_access_t access  = (((ucontext_t *)context)->uc_mcontext.gregs[REG_ERR] & 2) ? WRITE_ACCESS : READ_ACCESS;   
-  */   
+   dsm_access_t access  = (((ucontext_t *)context)->uc_mcontext.gregs[REG_ERR] & 2) ? WRITE_ACCESS : READ_ACCESS;
+  */
    /* adresse de la page dont fait partie l'adresse qui a provoque la faute */
    void  *page_addr  = (void *)(((unsigned long) addr) & ~(PAGE_SIZE-1));
 
@@ -128,40 +129,66 @@ static void segv_handler(int sig, siginfo_t *info, void *context)
 /* Seules ces deux dernieres fonctions sont visibles et utilisables */
 /* dans les programmes utilisateurs de la DSM                       */
 char *dsm_init(int argc, char **argv)
-{   
+{
    struct sigaction act;
-   int index;   
-   
+   int index;
+
+   char *buffer = NULL;
+   dsm_proc_t *proc_array = NULL;
+   int sock;
+   int sock_p2p;
+
    /* reception du nombre de processus dsm envoye */
    /* par le lanceur de programmes (DSM_NODE_NUM)*/
-   
+   sock = atoi(argv[argc-2]);
+   sock_p2p = atoi(argv[argc-1]);
+
+   if (read(sock, &DSM_NODE_NUM, sizeof(int)) < 0){
+       ERROR_EXIT("Erreur read");
+   }
+   fprintf(stdout,"nb de processus:%d \n", DSM_NODE_NUM);
+   buffer = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
+   proc_array = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
+
    /* reception de mon numero de processus dsm envoye */
    /* par le lanceur de programmes (DSM_NODE_ID)*/
-   
+   if (read(sock,&DSM_NODE_ID , sizeof(int)) < 0){
+       ERROR_EXIT("Erreur read");
+   }
+   fprintf(stdout,"rank de mon processus:%d \n", DSM_NODE_ID);
+
+
    /* reception des informations de connexion des autres */
    /* processus envoyees par le lanceur : */
    /* nom de machine, numero de port, etc. */
-   
-   /* initialisation des connexions */ 
-   /* avec les autres processus : connect/accept */
-   
-   /* Allocation des pages en tourniquet */
-   for(index = 0; index < PAGE_NUMBER; index ++){	
-     if ((index % DSM_NODE_NUM) == DSM_NODE_ID)
-       dsm_alloc_page(index);	     
-     dsm_change_info( index, WRITE, index % DSM_NODE_NUM);
+   if (read(sock, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM) < 0){
+       ERROR_EXIT("Erreur read");
    }
-   
-   /* mise en place du traitant de SIGSEGV */
-   act.sa_flags = SA_SIGINFO; 
-   act.sa_sigaction = segv_handler;
-   sigaction(SIGSEGV, &act, NULL);
-   
-   /* creation du thread de communication */
-   /* ce thread va attendre et traiter les requetes */
-   /* des autres processus */
-   pthread_create(&comm_daemon, NULL, dsm_comm_daemon, NULL);
-   
+   memcpy(proc_array, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM);
+   fprintf(stdout," LOOOOOOOOOOOOOOOOOOOOOOIC %s\n", proc_array[DSM_NODE_ID].connect_info.machine);
+
+
+   /* initialisation des connexions */
+   /* avec les autres processus : connect/accept */
+
+
+   // /* Allocation des pages en tourniquet */
+   // for(index = 0; index < PAGE_NUMBER; index ++){
+   //   if ((index % DSM_NODE_NUM) == DSM_NODE_ID)
+   //     dsm_alloc_page(index);
+   //   dsm_change_info( index, WRITE, index % DSM_NODE_NUM);
+   // }
+   //
+   // /* mise en place du traitant de SIGSEGV */
+   // act.sa_flags = SA_SIGINFO;
+   // act.sa_sigaction = segv_handler;
+   // sigaction(SIGSEGV, &act, NULL);
+   //
+   // /* creation du thread de communication */
+   // /* ce thread va attendre et traiter les requetes */
+   // /* des autres processus */
+   // pthread_create(&comm_daemon, NULL, dsm_comm_daemon, NULL);
+
    /* Adresse de début de la zone de mémoire partagée */
    return ((char *)BASE_ADDR);
 }
@@ -173,7 +200,6 @@ void dsm_finalize( void )
    /* terminer correctement le thread de communication */
    /* pour le moment, on peut faire : */
    pthread_cancel(comm_daemon);
-   
+
   return;
 }
-
