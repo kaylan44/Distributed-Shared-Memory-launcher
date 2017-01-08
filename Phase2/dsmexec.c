@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
 			printf("SIZE %d\n", size);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], buffer,SIZE_MSG) < 0){
 				ERROR_EXIT("Erreur read");
 			}
 

@@ -47,6 +47,6 @@ char **set_data_from_file(char* path, char** machine,int *num);
 
 
 //Connect the sockeet with the informations in arg
-void do_connect(int sock, char* hostname, int port);
+void do_connect(int sock, char* hostname, int port, struct sockaddr_in* sock_host );
 
 int initListeningSocket(int* sock, int num_procs, char* hostname);
