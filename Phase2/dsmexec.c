@@ -67,7 +67,8 @@ int main(int argc, char *argv[])
 		socklen_t addr_acc_len = sizeof(addr_acc);
 
 		char buffer[SIZE_MSG];
-		char *buffer2 = NULL;
+		int buffer_int;
+		char *proc_array2char = NULL;
 		char hostname[SIZE_MSG] = {0};
 
 		char sortie_out[500],sortie_err[500];
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
 				close(tube_stderr[i][1]);          /* Fermeture du coté écriture non utilisé par le pere */
 
 				num_procs_creat++;
-				buffer2 = malloc(sizeof(dsm_proc_t) * num_procs_creat);
+				proc_array2char = malloc(sizeof(dsm_proc_t) * num_procs_creat);
 			}
 		}
 
@@ -163,7 +164,6 @@ int main(int argc, char *argv[])
 			/* on accepte les connexions des processus dsm */
 
 			/* ACCEPT SOCKET */
-
 			//accept connection from client
 			do{
 				sock_acc[i] = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
@@ -171,30 +171,25 @@ int main(int argc, char *argv[])
 			while(sock_acc[i] <0 );
 
 
-
 			/*  On recupere le nom de la machine distante */
 			/* 1- d'abord la taille de la chaine */
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-			//proc_array[i].connect_info.machine = malloc(atoi(buffer)*sizeof(char));
 
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], buffer, buffer_int) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-
 			sprintf(proc_array[i].connect_info.machine, "%s", buffer);
 			printf("machine = %s\n", proc_array[i].connect_info.machine);
 
 			/* On recupere le pid du processus distant  */
-			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-
-			proc_array[i].pid = atoi(buffer);
+			proc_array[i].pid = buffer_int;
 			printf("pid = %d\n", proc_array[i].pid);
 
 
@@ -202,12 +197,11 @@ int main(int argc, char *argv[])
 			/* On recupere le numero de port de la socket */
 			/* d'ecoute des processus distants */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-			proc_array[i].connect_info.listenning_port = atoi(buffer);
+			proc_array[i].connect_info.listenning_port = buffer_int;
 			printf("port = %d\n", proc_array[i].connect_info.listenning_port);
-
 
 			proc_array[i].connect_info.rank = i;
 			printf("rank = %d\n", proc_array[i].connect_info.rank);
@@ -231,9 +225,9 @@ int main(int argc, char *argv[])
 			/* envoi des rangs aux processus dsm */
 			/* envoi des infos de connexion aux processus */
 
-			memcpy(buffer2, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
+			memcpy(proc_array2char, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
 
-			if (write(sock_acc[i], buffer2, num_procs_creat*sizeof( dsm_proc_t)) < 0){
+			if (write(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t)) < 0){
 				ERROR_EXIT("erreur write");
 			}
 

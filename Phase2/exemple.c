@@ -7,14 +7,6 @@ int main(int argc, char **argv)
    char *current;
    int value;
 
-   int i;
-
-
-   // fprintf(stdout," argx ex:%d \n", argc);
-   // for (i = 0; i < argc; i++){
-   //     fprintf(stdout," argv ex:%s \n", argv[i]);
-   // }
-
    pointer = dsm_init(argc,argv);
    current = pointer;
 
