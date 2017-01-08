@@ -139,6 +139,7 @@ char *dsm_init(int argc, char **argv)
    dsm_proc_t *proc_array = NULL;
    int sock;
    int sock_p2p;
+   int i;
 
    /* reception du nombre de processus dsm envoye */
    /* par le lanceur de programmes (DSM_NODE_NUM)*/
@@ -163,7 +164,9 @@ char *dsm_init(int argc, char **argv)
 
    /* initialisation des connexions */
    /* avec les autres processus : connect/accept */
-
+   for (i = 0; i < DSM_NODE_NUM; i++){
+       
+   }
 
    // /* Allocation des pages en tourniquet */
    // for(index = 0; index < PAGE_NUMBER; index ++){
