@@ -15,8 +15,8 @@ EXECS = common.o exemple dsmexec dsmwrap truc
 
 default: $(EXECS)
 
-exemple: exemple.o dsm.o 
-	$(CLINKER) $(OPTFLAGS) -o exemple exemple.o dsm.o  $(LIBS)
+exemple: exemple.o dsm.o common.o
+	$(CLINKER) $(OPTFLAGS) -o exemple exemple.o dsm.o common.o $(LIBS)
 	mv exemple ./bin
 
 dsmexec: dsmexec.o common.o
