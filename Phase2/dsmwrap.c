@@ -3,7 +3,6 @@
 int main(int argc, char **argv)
 
 {
-    struct sockaddr_in sock_host;
     char hostname[SIZE_MSG];
     char machine[SIZE_MSG];
     char len_machine[SIZE_MSG];
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
     sprintf(pid,"%d",getpid());
 
     //connect to remote socket
-    do_connect(sock,hostname, port, &sock_host);
+    do_connect(sock,hostname, port);
 
     gethostname(machine, SIZE_MSG);
     fprintf(stdout,"\n");

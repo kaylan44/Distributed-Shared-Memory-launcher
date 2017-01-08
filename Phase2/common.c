@@ -137,8 +137,9 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 }
 
 
-void do_connect(int sock, char* hostname, int port, struct sockaddr_in* sock_host ){
+void do_connect(int sock, char* hostname, int port){
 
+	struct sockaddr_in* sock_host ;
     memset(sock_host, '\0', sizeof(*sock_host));
     sock_host->sin_family = AF_INET;
     sock_host->sin_port = htons(port);
