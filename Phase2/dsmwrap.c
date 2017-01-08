@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     sprintf(newargv[len_newargv-2],"%d", sock);
     newargv[len_newargv] = NULL;
 
-    fprintf(stdout,"sock:%s \n", newargv[len_newargv-1]);
+    fprintf(stdout,"sock1:%s \n", newargv[len_newargv-1]);
 
 
     sprintf(hostname,"%s",argv[2]);
@@ -55,7 +55,8 @@ int main(int argc, char **argv)
 
     /* Envoi du nom de machine au lanceur */
     sprintf(len_machine, "%d", (int) strlen(machine));
-    if (write(sock, len_machine, SIZE_MSG) < 0){
+    int len_machine2 =  strlen(machine);
+    if (write(sock, &len_machine2, sizeof(int)) < 0){
         ERROR_EXIT("erreur write");
     }
     if (write(sock, machine, SIZE_MSG) < 0){

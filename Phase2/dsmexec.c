@@ -67,7 +67,8 @@ int main(int argc, char *argv[])
 		socklen_t addr_acc_len = sizeof(addr_acc);
 
 		char buffer[SIZE_MSG];
-		char *buffer2 = NULL;
+		int size;
+		char *proc_array2char = NULL;
 		char hostname[SIZE_MSG] = {0};
 
 		char sortie_out[500],sortie_err[500];
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
 				close(tube_stderr[i][1]);          /* Fermeture du coté écriture non utilisé par le pere */
 
 				num_procs_creat++;
-				buffer2 = malloc(sizeof(dsm_proc_t) * num_procs_creat);
+				proc_array2char = malloc(sizeof(dsm_proc_t) * num_procs_creat);
 			}
 		}
 
@@ -174,14 +175,15 @@ int main(int argc, char *argv[])
 
 			/*  On recupere le nom de la machine distante */
 			/* 1- d'abord la taille de la chaine */
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], &size, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
 			//proc_array[i].connect_info.machine = malloc(atoi(buffer)*sizeof(char));
 
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			printf("SIZE %d\n", size);
+			if (read(sock_acc[i], buffer, size) < 0){
 				ERROR_EXIT("Erreur read");
 			}
 
@@ -231,9 +233,9 @@ int main(int argc, char *argv[])
 			/* envoi des rangs aux processus dsm */
 			/* envoi des infos de connexion aux processus */
 
-			memcpy(buffer2, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
+			memcpy(proc_array2char, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
 
-			if (write(sock_acc[i], buffer2, num_procs_creat*sizeof( dsm_proc_t)) < 0){
+			if (write(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t)) < 0){
 				ERROR_EXIT("erreur write");
 			}
 
