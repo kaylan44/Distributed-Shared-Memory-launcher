@@ -19,6 +19,7 @@ int main(int argc, char **argv)
    current = pointer;
 
    printf("[%i] Coucou, mon adresse de base est : %p\n", DSM_NODE_ID, pointer);
+   printf("[%i] Il y a %d processus \n", DSM_NODE_ID, DSM_NODE_NUM);
 
    // if (DSM_NODE_ID == 0)
    //   {

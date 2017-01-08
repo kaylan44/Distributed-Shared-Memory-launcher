@@ -83,7 +83,9 @@ static int dsm_send(int dest,void *buf,size_t size)
 
 static int dsm_recv(int from,void *buf,size_t size)
 {
-   /* a completer */
+    if (read(from, buf , size) < 0){
+        ERROR_EXIT("Erreur read");
+    }
 }
 
 static void dsm_handler( void )
@@ -143,29 +145,20 @@ char *dsm_init(int argc, char **argv)
    sock = atoi(argv[argc-2]);
    sock_p2p = atoi(argv[argc-1]);
 
-   if (read(sock, &DSM_NODE_NUM, sizeof(int)) < 0){
-       ERROR_EXIT("Erreur read");
-   }
-   fprintf(stdout,"nb de processus:%d \n", DSM_NODE_NUM);
+   dsm_recv(sock, &DSM_NODE_NUM, sizeof(int));
+
    buffer = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
    proc_array = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
 
    /* reception de mon numero de processus dsm envoye */
    /* par le lanceur de programmes (DSM_NODE_ID)*/
-   if (read(sock,&DSM_NODE_ID , sizeof(int)) < 0){
-       ERROR_EXIT("Erreur read");
-   }
-   fprintf(stdout,"rank de mon processus:%d \n", DSM_NODE_ID);
-
+   dsm_recv(sock, &DSM_NODE_ID, sizeof(int));
 
    /* reception des informations de connexion des autres */
    /* processus envoyees par le lanceur : */
    /* nom de machine, numero de port, etc. */
-   if (read(sock, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM) < 0){
-       ERROR_EXIT("Erreur read");
-   }
+   dsm_recv(sock, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM);
    memcpy(proc_array, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM);
-   fprintf(stdout," LOOOOOOOOOOOOOOOOOOOOOOIC %s\n", proc_array[DSM_NODE_ID].connect_info.machine);
 
 
    /* initialisation des connexions */
