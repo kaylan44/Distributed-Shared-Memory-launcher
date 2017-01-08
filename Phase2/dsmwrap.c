@@ -6,12 +6,13 @@ int main(int argc, char **argv)
     struct sockaddr_in sock_host;
     char hostname[SIZE_MSG];
     char machine[SIZE_MSG];
-    char len_machine[SIZE_MSG];
+    int len_machine;
+
 
     int port = atoi(argv[1]);
     int sock;
-    char pid[SIZE_MSG];
-    char port_p2p[SIZE_MSG];
+    int pid;
+    int port_p2p;
     int sock_p2p_listen;
 
 
@@ -41,7 +42,7 @@ int main(int argc, char **argv)
 
 
     sprintf(hostname,"%s",argv[2]);
-    sprintf(pid,"%d",getpid());
+    pid = getpid();
 
     //connect to remote socket
     do_connect(sock,hostname, port, &sock_host);
@@ -50,36 +51,33 @@ int main(int argc, char **argv)
     fprintf(stdout,"\n");
     fprintf(stdout,"port:%d de %s\n", port, machine);
     fprintf(stdout,"hostname:%s de %s\n", hostname, machine);
-    fprintf(stdout,"pid:%s de %s\n", pid, machine);
+    fprintf(stdout,"pid:%d de %s\n", pid, machine);
     fprintf(stdout,"\n");
 
     /* Envoi du nom de machine au lanceur */
-    sprintf(len_machine, "%d", (int) strlen(machine));
-    int len_machine2 =  strlen(machine);
-    if (write(sock, &len_machine2, sizeof(int)) < 0){
+    len_machine =  strlen(machine);
+    if (write(sock, &len_machine, sizeof(int)) < 0){
         ERROR_EXIT("erreur write");
     }
-    if (write(sock, machine, SIZE_MSG) < 0){
+    if (write(sock, machine, len_machine) < 0){
         ERROR_EXIT("erreur write");
     }
 
     /* Envoi du pid au lanceur */
-    if (write(sock, pid,SIZE_MSG) < 0){
+    if (write(sock, &pid,sizeof(int)) < 0){
         ERROR_EXIT("erreur write");
     }
 
     /* Creation de la socket d'ecoute pour les */
     /* connexions avec les autres processus dsm */
-    sprintf(port_p2p, "%d", initListeningSocket(&sock_p2p_listen, 3, machine));
-    fprintf(stdout,"portlisten:%s de %s\n", port_p2p, machine);
-
-
+    port_p2p =  initListeningSocket(&sock_p2p_listen, 3, machine);
     newargv[len_newargv-1] = malloc(sizeof(int));
     sprintf(newargv[len_newargv-1],"%d",sock_p2p_listen);
+
     /* Envoi du numero de port au lanceur */
     /* pour qu'il le propage à tous les autres */
     /* processus dsm */
-    if (write(sock, port_p2p,SIZE_MSG) < 0){
+    if (write(sock, &port_p2p, sizeof(int)) < 0){
         ERROR_EXIT("erreur write");
     }
 

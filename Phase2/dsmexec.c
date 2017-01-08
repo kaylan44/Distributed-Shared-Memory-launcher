@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 		socklen_t addr_acc_len = sizeof(addr_acc);
 
 		char buffer[SIZE_MSG];
-		int size;
+		int buffer_int;
 		char *proc_array2char = NULL;
 		char hostname[SIZE_MSG] = {0};
 
@@ -164,7 +164,6 @@ int main(int argc, char *argv[])
 			/* on accepte les connexions des processus dsm */
 
 			/* ACCEPT SOCKET */
-
 			//accept connection from client
 			do{
 				sock_acc[i] = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
@@ -172,31 +171,25 @@ int main(int argc, char *argv[])
 			while(sock_acc[i] <0 );
 
 
-
 			/*  On recupere le nom de la machine distante */
 			/* 1- d'abord la taille de la chaine */
-			if (read(sock_acc[i], &size, sizeof(int)) < 0){
+			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-			//proc_array[i].connect_info.machine = malloc(atoi(buffer)*sizeof(char));
 
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
-			printf("SIZE %d\n", size);
-			if (read(sock_acc[i], buffer, size) < 0){
+			if (read(sock_acc[i], buffer, buffer_int) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-
 			sprintf(proc_array[i].connect_info.machine, "%s", buffer);
 			printf("machine = %s\n", proc_array[i].connect_info.machine);
 
 			/* On recupere le pid du processus distant  */
-			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-
-			proc_array[i].pid = atoi(buffer);
+			proc_array[i].pid = buffer_int;
 			printf("pid = %d\n", proc_array[i].pid);
 
 
@@ -204,12 +197,11 @@ int main(int argc, char *argv[])
 			/* On recupere le numero de port de la socket */
 			/* d'ecoute des processus distants */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, SIZE_MSG) < 0){
+			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
 				ERROR_EXIT("Erreur read");
 			}
-			proc_array[i].connect_info.listenning_port = atoi(buffer);
+			proc_array[i].connect_info.listenning_port = buffer_int;
 			printf("port = %d\n", proc_array[i].connect_info.listenning_port);
-
 
 			proc_array[i].connect_info.rank = i;
 			printf("rank = %d\n", proc_array[i].connect_info.rank);
