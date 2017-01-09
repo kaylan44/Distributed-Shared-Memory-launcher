@@ -143,6 +143,7 @@ char *dsm_init(int argc, char **argv)
     int *sock_acc ;
     struct sockaddr_in addr_acc;
     socklen_t addr_acc_len = sizeof(addr_acc);
+    struct sockaddr_in sock_host;
     int *sock_connect_dsm;
 
     char msg[SIZE_MSG]; // juste pour test
@@ -178,7 +179,7 @@ char *dsm_init(int argc, char **argv)
             if (sock_connect_dsm[i] < 0){
                 ERROR_EXIT("erreur socket")
             }
-            do_connect(sock_connect_dsm[i], proc_array[i].connect_info.machine, proc_array[i].connect_info.listenning_port);
+            do_connect(sock_connect_dsm[i], proc_array[i].connect_info.machine, proc_array[i].connect_info.listenning_port, &sock_host );
             do{
                 sock_acc[i] = accept(sock_p2p_listen, (struct sockaddr*) & addr_acc, &addr_acc_len);
             }
