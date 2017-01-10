@@ -33,6 +33,7 @@ void sigchld_handler(int sig){
 	waitpid (-1, &status, WNOHANG);
 	/* Stock le statut de sortie du dernier dans une variable globale.  */
 	child_exit_status = status;
+	num_procs_creat--;
 	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
 }
 
@@ -153,34 +154,24 @@ int main(int argc, char *argv[])
 
 			/*  On recupere le nom de la machine distante */
 			/* 1- d'abord la taille de la chaine */
-
-			// if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
-			// 	ERROR_EXIT("Erreur read");
-			// }
 			recv_msg(sock_acc[i], &buffer_int, sizeof(int));
 
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
 			recv_msg(sock_acc[i], buffer, buffer_int);
-			// if (read(sock_acc[i], buffer, buffer_int) < 0){
-			// 	ERROR_EXIT("Erreur read");
-			// }
+
 			sprintf(proc_array[i].connect_info.machine, "%s", buffer);
 
 
 			/*3- On recupere le pid du processus distant  */
 			recv_msg(sock_acc[i], &buffer_int, sizeof(int));
-			// if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
-			// 	ERROR_EXIT("Erreur read");
-			// }
+
 			proc_array[i].pid = buffer_int;
 
 			/*4- On recupere le numero de port de la socket d'ecoute des processus distants */
 			memset(buffer, '\0', SIZE_MSG);
 			recv_msg(sock_acc[i], &buffer_int, sizeof(int));
-			// if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
-			// 	ERROR_EXIT("Erreur read");
-			// }
+
 			proc_array[i].connect_info.listenning_port = buffer_int;
 			proc_array[i].connect_info.rank = i;
 
@@ -195,26 +186,17 @@ int main(int argc, char *argv[])
 
 			/* envoi du nombre de processus aux processus dsm*/
 			send_msg(sock_acc[i], &num_procs_creat, sizeof(int));
-			// if (write(sock_acc[i], &num_procs_creat, sizeof(int)) < 0){
-			// 	ERROR_EXIT("erreur write");
-			// }
+
 
 			/* envoi du rang du processus*/
 			send_msg(sock_acc[i], &i, sizeof(int));
 
-			// if (write(sock_acc[i], &i, sizeof(int)) < 0){
-			// 	ERROR_EXIT("erreur write");
-			// }
 
 			/* envoi du tableau des processus aux processus dsm*/
 			/* envoi des rangs aux processus dsm */
 			/* envoi des infos de connexion aux processus */
 			memcpy(proc_array2char, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
 			send_msg(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t));
-
-			// if (write(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t)) < 0){
-			// 	ERROR_EXIT("erreur write");
-			// }
 
 		}
 		/* gestion des E/S : on recupere les caracteres */
@@ -251,6 +233,9 @@ int main(int argc, char *argv[])
 						memset(&sortie_err,'\0',strlen(sortie_err));
 					}
 				}
+			}
+			if(num_procs_creat==0){
+				break;
 			}
 		}
 

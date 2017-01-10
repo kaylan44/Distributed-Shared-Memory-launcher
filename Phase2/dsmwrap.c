@@ -44,21 +44,11 @@ int main(int argc, char **argv){
     /*1- Envoi du nom de machine au lanceur */
     len_machine =  strlen(machine);
     send_msg(sock_dsmexec, &len_machine, sizeof(int));
-    // if (write(sock_dsmexec, &len_machine, sizeof(int)) < 0){
-    //     ERROR_EXIT("erreur write");
-    // }
-    send_msg(sock_dsmexec, machine, len_machine);
 
-    // if (write(sock_dsmexec, machine, len_machine) < 0){
-    //     ERROR_EXIT("erreur write");
-    // }
+    send_msg(sock_dsmexec, machine, len_machine);
 
     /*2- Envoi du pid au lanceur */
     send_msg(sock_dsmexec, &pid,sizeof(int));
-
-    // if (write(sock_dsmexec, &pid,sizeof(int)) < 0){
-    //     ERROR_EXIT("erreur write");
-    // }
 
     /* Creation de la socket d'ecoute pour les connexions avec les autres processus dsm */
     port_p2p =  initListeningSocket(&sock_p2p_listen, 3, machine);
@@ -67,9 +57,6 @@ int main(int argc, char **argv){
 
     /*3- Envoi du numero de port au lanceur pour qu'il le propage à tous les autres processus dsm */
     send_msg(sock_dsmexec, &port_p2p, sizeof(int));
-    // if (write(sock_dsmexec, &port_p2p, sizeof(int)) < 0){
-    //     ERROR_EXIT("erreur write");
-    // }
 
     /* on execute la bonne commande */
     //execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);

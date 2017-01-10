@@ -51,6 +51,6 @@ void do_connect(int sock, char* hostname, int port);
 
 int initListeningSocket(int* sock, int num_procs, char* hostname);
 
-void send_msg(int from, void *buf, size_t to_send);
+void send_msg(int to, void *buf, size_t to_send);
 
 void recv_msg(int from, void *buf, size_t to_recv);
