@@ -86,7 +86,8 @@ int main(int argc, char **argv)
 
 
     FILE* fichier = NULL;
-    fichier = fopen("Documents/2A/PR204/PR204/Phase2/titi", "a");
+    //fichier = fopen("Documents/2A/PR204/PR204/Phase2/titi", "a");
+    fichier = fopen("Semestre_7/PR204/Phase2/titi", "a");
     if (fichier == NULL)
     {
         ERROR_EXIT("erreur write");
@@ -97,8 +98,8 @@ int main(int argc, char **argv)
     fclose(fichier);
 
     /* on execute la bonne commande */
-    execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
-
+    //execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
+    execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
 
     return 0;
 /*
