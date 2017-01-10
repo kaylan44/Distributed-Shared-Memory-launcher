@@ -132,19 +132,38 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 }
 
 
-void do_connect(int sock, char* hostname, int port, struct sockaddr_in* sock_host ){
-    // Avec la socket sock on se connect avec la machine hostname
-    memset(sock_host, '\0', sizeof(*sock_host));
-    sock_host->sin_family = AF_INET;
-    sock_host->sin_port = htons(port); // from host byte order to network byte order .
+
+void do_connect(int sock, char* hostname, int port){
+	// Avec la socket sock on se connect avec la machine hostname
+	struct sockaddr_in sock_host;
+    memset(&sock_host, '\0', sizeof(struct sockaddr_in));
+    sock_host.sin_family = AF_INET;
+    sock_host.sin_port = htons(port); // from host byte order to network byte order .
 
     struct hostent* h;
     h = gethostbyname(hostname);
 
     // char *h_addr est synonyme de h_addr_list[0]
-    memcpy(&sock_host->sin_addr, h->h_addr_list[0], h->h_length);
+    memcpy(&sock_host.sin_addr, h->h_addr_list[0], h->h_length);
 
-    if (connect(sock, (struct sockaddr*)  sock_host, sizeof(*sock_host)) < 0)
+    if (connect(sock, (struct sockaddr*)  &sock_host, sizeof(struct sockaddr_in)) < 0){
        ERROR_EXIT("erreur connect");
+   }
+
+}
+
+void send_msg(int to, void *buf, size_t to_send){
+	int sent = 0;
+	do{
+		sent += write(to, buf + sent, to_send - sent);
+	} while ( sent != to_send);
+
+}
+
+void recv_msg(int from, void *buf, size_t to_recv){
+	int recv = 0;
+	do{
+		recv += read(from, buf + recv, to_recv - recv);
+	} while ( recv != to_recv);
 
 }

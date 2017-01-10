@@ -35,7 +35,7 @@ int main(int argc, char **argv){
     pid = getpid();
 
     //connection avec dsmexec
-    do_connect(sock_dsmexec,hostname_dsmexec, port_dsmexec, &sock_host);
+    do_connect(sock_dsmexec,hostname_dsmexec, port_dsmexec);
     gethostname(machine, SIZE_MSG);
 
     fprintf(stdout,"nom de machine: %s \n", machine);
@@ -43,17 +43,22 @@ int main(int argc, char **argv){
 
     /*1- Envoi du nom de machine au lanceur */
     len_machine =  strlen(machine);
-    if (write(sock_dsmexec, &len_machine, sizeof(int)) < 0){
-        ERROR_EXIT("erreur write");
-    }
-    if (write(sock_dsmexec, machine, len_machine) < 0){
-        ERROR_EXIT("erreur write");
-    }
+    send_msg(sock_dsmexec, &len_machine, sizeof(int));
+    // if (write(sock_dsmexec, &len_machine, sizeof(int)) < 0){
+    //     ERROR_EXIT("erreur write");
+    // }
+    send_msg(sock_dsmexec, machine, len_machine);
+
+    // if (write(sock_dsmexec, machine, len_machine) < 0){
+    //     ERROR_EXIT("erreur write");
+    // }
 
     /*2- Envoi du pid au lanceur */
-    if (write(sock_dsmexec, &pid,sizeof(int)) < 0){
-        ERROR_EXIT("erreur write");
-    }
+    send_msg(sock_dsmexec, &pid,sizeof(int));
+
+    // if (write(sock_dsmexec, &pid,sizeof(int)) < 0){
+    //     ERROR_EXIT("erreur write");
+    // }
 
     /* Creation de la socket d'ecoute pour les connexions avec les autres processus dsm */
     port_p2p =  initListeningSocket(&sock_p2p_listen, 3, machine);
@@ -61,9 +66,10 @@ int main(int argc, char **argv){
     sprintf(newargv[len_newargv-1],"%d",sock_p2p_listen);
 
     /*3- Envoi du numero de port au lanceur pour qu'il le propage à tous les autres processus dsm */
-    if (write(sock_dsmexec, &port_p2p, sizeof(int)) < 0){
-        ERROR_EXIT("erreur write");
-    }
+    send_msg(sock_dsmexec, &port_p2p, sizeof(int));
+    // if (write(sock_dsmexec, &port_p2p, sizeof(int)) < 0){
+    //     ERROR_EXIT("erreur write");
+    // }
 
     /* on execute la bonne commande */
     //execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);

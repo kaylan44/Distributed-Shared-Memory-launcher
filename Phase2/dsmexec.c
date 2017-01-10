@@ -147,34 +147,40 @@ int main(int argc, char *argv[])
 			do{
 				sock_acc[i] = accept(sock_serv, (struct sockaddr*) & addr_acc, &addr_acc_len);
 			}
-			while(sock_acc[i] <0 );
+			while(errno == EINTR );
+
 
 
 			/*  On recupere le nom de la machine distante */
 			/* 1- d'abord la taille de la chaine */
-			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
-				ERROR_EXIT("Erreur read");
-			}
+
+			// if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
+			// 	ERROR_EXIT("Erreur read");
+			// }
+			recv_msg(sock_acc[i], &buffer_int, sizeof(int));
 
 			/* 2- puis la chaine elle-meme */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], buffer, buffer_int) < 0){
-				ERROR_EXIT("Erreur read");
-			}
+			recv_msg(sock_acc[i], buffer, buffer_int);
+			// if (read(sock_acc[i], buffer, buffer_int) < 0){
+			// 	ERROR_EXIT("Erreur read");
+			// }
 			sprintf(proc_array[i].connect_info.machine, "%s", buffer);
 
 
 			/*3- On recupere le pid du processus distant  */
-			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
-				ERROR_EXIT("Erreur read");
-			}
+			recv_msg(sock_acc[i], &buffer_int, sizeof(int));
+			// if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
+			// 	ERROR_EXIT("Erreur read");
+			// }
 			proc_array[i].pid = buffer_int;
 
 			/*4- On recupere le numero de port de la socket d'ecoute des processus distants */
 			memset(buffer, '\0', SIZE_MSG);
-			if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
-				ERROR_EXIT("Erreur read");
-			}
+			recv_msg(sock_acc[i], &buffer_int, sizeof(int));
+			// if (read(sock_acc[i], &buffer_int, sizeof(int)) < 0){
+			// 	ERROR_EXIT("Erreur read");
+			// }
 			proc_array[i].connect_info.listenning_port = buffer_int;
 			proc_array[i].connect_info.rank = i;
 
@@ -188,22 +194,27 @@ int main(int argc, char *argv[])
 		for(i = 0; i < num_procs_creat ; i++){
 
 			/* envoi du nombre de processus aux processus dsm*/
-			if (write(sock_acc[i], &num_procs_creat, sizeof(int)) < 0){
-				ERROR_EXIT("erreur write");
-			}
+			send_msg(sock_acc[i], &num_procs_creat, sizeof(int));
+			// if (write(sock_acc[i], &num_procs_creat, sizeof(int)) < 0){
+			// 	ERROR_EXIT("erreur write");
+			// }
 
 			/* envoi du rang du processus*/
-			if (write(sock_acc[i], &i, sizeof(int)) < 0){
-				ERROR_EXIT("erreur write");
-			}
+			send_msg(sock_acc[i], &i, sizeof(int));
+
+			// if (write(sock_acc[i], &i, sizeof(int)) < 0){
+			// 	ERROR_EXIT("erreur write");
+			// }
 
 			/* envoi du tableau des processus aux processus dsm*/
 			/* envoi des rangs aux processus dsm */
 			/* envoi des infos de connexion aux processus */
 			memcpy(proc_array2char, proc_array ,sizeof( dsm_proc_t) * num_procs_creat);
-			if (write(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t)) < 0){
-				ERROR_EXIT("erreur write");
-			}
+			send_msg(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t));
+
+			// if (write(sock_acc[i], proc_array2char, num_procs_creat*sizeof( dsm_proc_t)) < 0){
+			// 	ERROR_EXIT("erreur write");
+			// }
 
 		}
 		/* gestion des E/S : on recupere les caracteres */
