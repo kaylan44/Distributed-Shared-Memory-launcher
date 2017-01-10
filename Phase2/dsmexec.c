@@ -33,6 +33,7 @@ void sigchld_handler(int sig){
 	waitpid (-1, &status, WNOHANG);
 	/* Stock le statut de sortie du dernier dans une variable globale.  */
 	child_exit_status = status;
+	num_procs_creat--;
 	printf("Processus fils traité\n"); //Indique qu'on libère bien les ressources
 }
 
@@ -240,6 +241,9 @@ int main(int argc, char *argv[])
 						memset(&sortie_err,'\0',strlen(sortie_err));
 					}
 				}
+			}
+			if(num_procs_creat==0){
+				break;
 			}
 		}
 

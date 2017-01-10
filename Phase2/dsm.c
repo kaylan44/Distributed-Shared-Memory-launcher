@@ -135,65 +135,70 @@ char *dsm_init(int argc, char **argv)
     struct sigaction act;
     int index;
 
-    char *buffer = NULL;
+    char *proc_array2char = NULL;
     dsm_proc_t *proc_array = NULL;
-    int sock;
+    int sock_dsmexec;
     int sock_p2p_listen;
     int i;
-    int *sock_acc ;
+    int *sock_acc;
     struct sockaddr_in addr_acc;
     socklen_t addr_acc_len = sizeof(addr_acc);
     struct sockaddr_in sock_host;
     int *sock_connect_dsm;
 
-    char msg[SIZE_MSG]; // juste pour test
+    char msg[SIZE_MSG]; // Test envoi de messages entre processus distants
+
+    sock_dsmexec = atoi(argv[argc-2]);
+    sock_p2p_listen = atoi(argv[argc-1]);
 
     /* reception du nombre de processus dsm envoye */
     /* par le lanceur de programmes (DSM_NODE_NUM)*/
-    sock = atoi(argv[argc-2]);
-    sock_p2p_listen = atoi(argv[argc-1]);
+    dsm_recv(sock_dsmexec, &DSM_NODE_NUM, sizeof(int));
 
-    dsm_recv(sock, &DSM_NODE_NUM, sizeof(int));
-
-    buffer = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
+    proc_array2char = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
     proc_array = malloc(sizeof(dsm_proc_t) * DSM_NODE_NUM);
     sock_acc=malloc(DSM_NODE_NUM*sizeof(int));
     sock_connect_dsm = malloc(DSM_NODE_NUM * sizeof(int));
 
     /* reception de mon numero de processus dsm envoye */
     /* par le lanceur de programmes (DSM_NODE_ID)*/
-    dsm_recv(sock, &DSM_NODE_ID, sizeof(int));
+    dsm_recv(sock_dsmexec, &DSM_NODE_ID, sizeof(int));
 
     /* reception des informations de connexion des autres */
     /* processus envoyees par le lanceur : */
     /* nom de machine, numero de port, etc. */
-    dsm_recv(sock, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM);
-    memcpy(proc_array, buffer, sizeof(dsm_proc_t) * DSM_NODE_NUM);
-
+    dsm_recv(sock_dsmexec, proc_array2char, sizeof(dsm_proc_t) * DSM_NODE_NUM);
+    memcpy(proc_array, proc_array2char, sizeof(dsm_proc_t) * DSM_NODE_NUM);
 
     /* initialisation des connexions */
     /* avec les autres processus : connect/accept */
     for (i = 0; i < DSM_NODE_NUM; i++){
-        if (DSM_NODE_ID != i ){
+        if (DSM_NODE_ID != i ){// Attention on ne veut pas lire nos propres infos
+
             sock_connect_dsm[i] = socket(AF_INET,SOCK_STREAM, IPPROTO_TCP);
             if (sock_connect_dsm[i] < 0){
                 ERROR_EXIT("erreur socket")
             }
+            /* demande de connection au processus distant */
             do_connect(sock_connect_dsm[i], proc_array[i].connect_info.machine, proc_array[i].connect_info.listenning_port, &sock_host );
-            do{
-                sock_acc[i] = accept(sock_p2p_listen, (struct sockaddr*) & addr_acc, &addr_acc_len);
-            }
-            while(sock_acc[i] <0 );
-            fprintf(stdout,"sockacc num %d : valeur %d\n", i, sock_acc[i]);
-
         }
     }
 
+    for (i = 0; i < DSM_NODE_NUM; i++){
+        if (DSM_NODE_ID != i ){// Attention on ne veut pas lire nos propres infos
+            /* acceptation des processus distants */
+            do{
+                sock_acc[i] = accept(sock_p2p_listen, (struct sockaddr*) & addr_acc, &addr_acc_len);
+            }
+            while(errno == EINTR );
+        }
+    }
     // TEST de Connexion
+    // Le processus 0 envoie des messages aux restes des processus
     if(DSM_NODE_ID == 0){
         for(i = 0; i < DSM_NODE_NUM; i++){
             if (DSM_NODE_ID != i ){
-                sprintf(msg, "%s", "Test d'envoie de message");
+                sprintf(msg, "%s", "Test d'envoi de message inter processus dsm");
                 if (write(sock_connect_dsm[i], msg,SIZE_MSG) < 0){
                     ERROR_EXIT("erreur write");
                 }
