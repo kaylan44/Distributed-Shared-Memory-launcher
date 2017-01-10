@@ -102,12 +102,12 @@ int main(int argc, char *argv[])
 
 			/* creation du tube pour rediriger stdout */
 			if (pipe(tube_stdout[i]) == -1) {
-				perror("Le pipe stdout n'a pas fonctionné");
+				ERROR_EXIT("Le pipe stdout n'a pas fonctionné");
 			}
 
 			/* creation du tube pour rediriger stdout */
 			if (pipe(tube_stderr[i]) == -1) {
-				perror("Le pipe stderr n'a pas fonctionné");
+				ERROR_EXIT("Le pipe stderr n'a pas fonctionné");
 			}
 
 			pid = fork();
