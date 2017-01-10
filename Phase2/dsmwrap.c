@@ -6,6 +6,8 @@ int main(int argc, char **argv){
     char hostname_dsmexec[SIZE_MSG];
     char machine[SIZE_MSG];
     int len_machine;
+    char str[SIZE_MSG];
+    char exec_path[SIZE_MSG];
 
     int pid;
     int sock_dsmexec;
@@ -66,6 +68,10 @@ int main(int argc, char **argv){
     }
 
     /* on execute la bonne commande */
+    getcwd(str,SIZE_MSG);
+    sprintf(exec_path,"%s/%s",str,"bin/dsmwrap");
+    execvp(exec_path,newargv);
+
     execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
     //execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
 

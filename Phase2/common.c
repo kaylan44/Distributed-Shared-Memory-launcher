@@ -100,6 +100,8 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 
 	int i;
 	char ** newargv = NULL;
+    char str[SIZE_MSG];
+    char exec_path[SIZE_MSG];
     // en entrée argv = ./bin/dsmexec machine_file exemple arg1
 
     // (argc - 2) =  nombre d'arguement utile -> exemple + argv1 argv2 ...
@@ -115,6 +117,11 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 
     sprintf(newargv[0],"%s","ssh");
     sprintf(newargv[1],"%s",name);
+
+    getcwd(str,SIZE_MSG);
+    sprintf(exec_path,"%s/%s",str,"bin/dsmwrap");
+    execvp(exec_path,newargv);
+
     sprintf(newargv[2],"%s","Documents/2A/PR204/PR204/Phase2/bin/dsmwrap");
     //sprintf(newargv[2],"%s","Semestre_7/PR204/Phase2/bin/dsmwrap");
     sprintf(newargv[3],"%d",port_serv);
