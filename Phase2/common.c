@@ -101,9 +101,6 @@ int initListeningSocket(int* sock, int num_procs, char* hostname){
         ERROR_EXIT("getsockname");
     port = ntohs(serv_add.sin_port);
 
-
-
-    printf("Père en écoute \n");
     return port;
 }
 
