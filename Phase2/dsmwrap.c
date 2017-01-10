@@ -66,8 +66,8 @@ int main(int argc, char **argv){
     }
 
     /* on execute la bonne commande */
-    //execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
-    execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
+    execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
+    //execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
 
     return 0;
 }
