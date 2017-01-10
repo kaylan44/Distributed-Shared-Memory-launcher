@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     sprintf(newargv[len_newargv-2],"%d", sock);
     newargv[len_newargv] = NULL;
 
-    fprintf(stdout,"sock1:%s \n", newargv[len_newargv-1]);
+    fprintf(stdout,"sock1:%s\n", newargv[len_newargv-2]);
 
 
     sprintf(hostname,"%s",argv[2]);
@@ -48,10 +48,9 @@ int main(int argc, char **argv)
     do_connect(sock,hostname, port, &sock_host);
 
     gethostname(machine, SIZE_MSG);
-    fprintf(stdout,"\n");
     fprintf(stdout,"port:%d de %s\n", port, machine);
     fprintf(stdout,"hostname:%s de %s\n", hostname, machine);
-    fprintf(stdout,"pid:%d de %s\n", pid, machine);
+    fprintf(stdout,"pid:%d de %s\n\n", pid, machine);
     fprintf(stdout,"\n");
 
     /* Envoi du nom de machine au lanceur */
@@ -86,8 +85,8 @@ int main(int argc, char **argv)
 
 
     FILE* fichier = NULL;
-    //fichier = fopen("Documents/2A/PR204/PR204/Phase2/titi", "a");
-    fichier = fopen("Semestre_7/PR204/Phase2/titi", "a");
+    fichier = fopen("Documents/2A/PR204/PR204/Phase2/titi", "a");
+    //fichier = fopen("Semestre_7/PR204/Phase2/titi", "a");
     if (fichier == NULL)
     {
         ERROR_EXIT("erreur write");
@@ -98,8 +97,8 @@ int main(int argc, char **argv)
     fclose(fichier);
 
     /* on execute la bonne commande */
-    //execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
-    execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
+    execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
+    //execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
 
     return 0;
 /*

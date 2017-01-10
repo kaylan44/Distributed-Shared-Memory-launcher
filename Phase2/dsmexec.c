@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 		/* la machine est un des elements d'identification */
 		/* creation de la socket d'ecoute */
 		port_serv = initListeningSocket(&sock_serv, num_procs, hostname);
-		printf("fd sock_serv %d\n", sock_serv);
+		printf("fd sock_serv : %d\n", sock_serv);
 		/* + ecoute effective */
 
 		tube_stderr=malloc(num_procs*sizeof(int));
@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 			printf("port = %d\n", proc_array[i].connect_info.listenning_port);
 
 			proc_array[i].connect_info.rank = i;
-			printf("rank = %d\n", proc_array[i].connect_info.rank);
+			printf("rank = %d\n\n", proc_array[i].connect_info.rank);
 
 		}
 
