@@ -6,15 +6,16 @@ int main(int argc, char **argv){
     char hostname_dsmexec[SIZE_MSG];
     char machine[SIZE_MSG];
     int len_machine;
+    char exec_path[SIZE_MSG];
 
     int pid;
     int sock_dsmexec;
-    int port_dsmexec = atoi(argv[1]);
+    int port_dsmexec = atoi(argv[2]);
     int port_p2p;
     int sock_p2p_listen;
-    struct sockaddr_in sock_host;
 
-    int len_newargv=argc-3 + 2;
+    int len_newargv=argc-3-1 + 2;
+
     // -3 on supprime ce qui ne nous interesse pas
     // +2 on veut rajouter la sock p2p et la sock dsmexec
     char ** newargv=malloc (len_newargv * sizeof(char*));
@@ -26,12 +27,12 @@ int main(int argc, char **argv){
         ERROR_EXIT("erreur socket");
     }
     // on rajoute la socket en avant derniere position
-    newargv = argv+3;
+    newargv = argv+3+1;
     newargv[len_newargv-2] = malloc(sizeof(int));
     sprintf(newargv[len_newargv-2],"%d", sock_dsmexec);
     newargv[len_newargv] = NULL;
 
-    sprintf(hostname_dsmexec,"%s",argv[2]);
+    sprintf(hostname_dsmexec,"%s",argv[3]);
     pid = getpid();
 
     //connection avec dsmexec
@@ -59,8 +60,17 @@ int main(int argc, char **argv){
     send_msg(sock_dsmexec, &port_p2p, sizeof(int));
 
     /* on execute la bonne commande */
+
     //execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
-    execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
+    //execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
+
+
+    sprintf(exec_path,"%s/%s",argv[1],"bin/exemple");
+    execvp(exec_path,newargv);
+    //
+    // execvp("Documents/2A/PR204/PR204/Phase2/bin/exemple",newargv);
+    // //execvp("Semestre_7/PR204/Phase2/bin/exemple",newargv);
+
 
     return 0;
 }

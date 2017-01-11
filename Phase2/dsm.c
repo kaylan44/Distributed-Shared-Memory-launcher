@@ -83,9 +83,7 @@ static int dsm_send(int dest,void *buf,size_t size)
 
 static int dsm_recv(int from,void *buf,size_t size)
 {
-    if (read(from, buf , size) < 0){
-        ERROR_EXIT("Erreur read");
-    }
+
 }
 
 static void dsm_handler( void )
@@ -205,7 +203,7 @@ char *dsm_init(int argc, char **argv)
         }
     }
     else{
-        recv_msg(sock_acc[0], msg, SIZE_MSG) < 0);
+        recv_msg(sock_acc[0], msg, SIZE_MSG);
         fprintf(stdout,"sockp2p dsm écrit: %s\n", msg);
     }
     // FIN de test Connexion

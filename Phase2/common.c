@@ -100,11 +100,13 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 
 	int i;
 	char ** newargv = NULL;
+    char str[SIZE_MSG];
+    char exec_path[SIZE_MSG];
     // en entrée argv = ./bin/dsmexec machine_file exemple arg1
 
     // (argc - 2) =  nombre d'arguement utile -> exemple + argv1 argv2 ...
     // 5 = ssh toto dsmwrap port ip
-	int len_newargv = 5 + argc - 2;
+	int len_newargv = 6 + argc - 2;
 
 	newargv = malloc(len_newargv * sizeof(char*));
 
@@ -115,16 +117,21 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 
     sprintf(newargv[0],"%s","ssh");
     sprintf(newargv[1],"%s",name);
+
+    getcwd(str,SIZE_MSG);
+	//memeset(str, '\0', )
+    sprintf(exec_path,"%s/%s",str,"bin/dsmwrap");
     //sprintf(newargv[2],"%s","Documents/2A/PR204/PR204/Phase2/bin/dsmwrap");
-    sprintf(newargv[2],"%s","Semestre_7/PR204/Phase2/bin/dsmwrap");
-    sprintf(newargv[3],"%d",port_serv);
-    sprintf(newargv[4],"%s",addr_ip);
+    sprintf(newargv[2],"%s",exec_path);
+	sprintf(newargv[3],"%s",str);
+    sprintf(newargv[4],"%d",port_serv);
+    sprintf(newargv[5],"%s",addr_ip);
 
 
 	// "-2" car on a le nom du prog et machinefile en 2 premiers arguments
     // on ajoute ici exemple arg1 argv2 ....
 	for (i=0;i<argc-2;i++){
-        sprintf(newargv[5+i],"%s",argv[i+2]);
+        sprintf(newargv[6+i],"%s",argv[i+2]);
 	}
     newargv[len_newargv] = NULL;
 
