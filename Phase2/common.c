@@ -102,10 +102,10 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
 	char ** newargv = NULL;
     char str[SIZE_MSG];
     char exec_path[SIZE_MSG];
-    // en entrée argv = ./bin/dsmexec machine_file exemple arg1
+    // en entrée argv = ./bin/dsmexec machine_file exemple arg1 .....
 
     // (argc - 2) =  nombre d'arguement utile -> exemple + argv1 argv2 ...
-    // 5 = ssh toto dsmwrap port ip
+    // 6 = ssh name dsmwrap path_cwd port ip
 	int len_newargv = 6 + argc - 2;
 
 	newargv = malloc(len_newargv * sizeof(char*));
@@ -119,7 +119,6 @@ char ** init_SshArg(char* name,int port_serv,char* addr_ip, int argc, char ** ar
     sprintf(newargv[1],"%s",name);
 
     getcwd(str,SIZE_MSG);
-	//memeset(str, '\0', )
     sprintf(exec_path,"%s/%s",str,"bin/dsmwrap");
     //sprintf(newargv[2],"%s","Documents/2A/PR204/PR204/Phase2/bin/dsmwrap");
     sprintf(newargv[2],"%s",exec_path);
